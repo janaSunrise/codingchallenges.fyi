@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 
 int get_char_count(FILE *fp) {
   int count = 0;
@@ -6,12 +7,35 @@ int get_char_count(FILE *fp) {
   return count;
 }
 
-int main(int argc, char* argv[]) {
-  // printf("%d\n", argc);
-  // for (int i = 0; i < argc; i++) {
-  //   printf("%s\n", argv[i]);
-  // }
+int get_line_count(FILE *fp) {
+  int c;
+  int count = 0;
 
+  while ((c = fgetc(fp)) != EOF)
+    if (c == '\n')
+      count++;
+
+  return count;
+}
+
+int get_word_count(FILE *fp) {
+  int c;
+  int count = 0;
+  int in_word = 0;
+
+  while ((c = fgetc(fp)) != EOF) {
+    if (isspace(c)) {
+      in_word = 0;
+    } else if (!in_word) {
+      in_word = 1;
+      count++;
+    }
+  }
+
+  return count;
+}
+
+int main(int argc, char* argv[]) {
   if (argc != 3) {
     printf("error: invalid number of arguments\n");
     printf("usage: ./mywc <mode> <filepath>\n");
@@ -20,7 +44,7 @@ int main(int argc, char* argv[]) {
 
   char mode;
   if (sscanf(argv[1], "-%c", &mode) != 1) {
-    printf("error: invalid mode flag\n");
+    printf("error: invalid mode flag. supported flags: -c, -l, -w\n");
   }
 
   char* filepath = argv[2];
@@ -36,8 +60,16 @@ int main(int argc, char* argv[]) {
       printf("%d %s\n", get_char_count(file), filepath);
       break;
 
+    case 'l':
+      printf("%d %s\n", get_line_count(file), filepath);
+      break;
+
+    case 'w':
+      printf("%d %s\n", get_word_count(file), filepath);
+      break;
+
     default:
-      printf("error: invalid options. supported options: -c\n");
+      printf("error: invalid mode flag\n");
   }
 
   // safely close file when done
